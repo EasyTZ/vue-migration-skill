@@ -28,5 +28,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           package-manager-cache: false
+      - name: 记录实际运行环境
+        run: |
+          node --version
+          npm --version
       - name: 检查脚本、文档引用与边界行为
         run: node --test
