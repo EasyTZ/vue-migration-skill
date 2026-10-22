@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = path.dirname(fileURLToPath(import.meta.url));
+const output = path.join(root, 'dist');
+await fs.mkdir(path.join(output, 'src'), { recursive: true });
+await fs.copyFile(path.join(root, 'index.html'), path.join(output, 'index.html'));
+await fs.copyFile(path.join(root, 'src/domain.mjs'), path.join(output, 'src/domain.mjs'));
+await fs.copyFile(path.join(root, 'src/app.mjs'), path.join(output, 'src/app.mjs'));
+await fs.copyFile(path.join(root, 'node_modules/vue/dist/vue.esm.browser.js'), path.join(output, 'vue.js'));
+console.log('合成 Vue 2 源工程构建完成');

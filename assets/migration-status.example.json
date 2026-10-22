@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "baselineSnapshot": null,
+  "entriesReviewed": false,
+  "architectureReviewed": false,
+  "files": [],
+  "entries": [],
+  "architecture": [],
+  "checks": [
+    { "id": "lint", "kind": "lint", "status": "pending", "command": null, "exitCode": null, "executedAt": null, "evidence": [] },
+    { "id": "static", "kind": "static", "status": "pending", "command": null, "exitCode": null, "executedAt": null, "evidence": [] },
+    { "id": "test", "kind": "test", "status": "pending", "command": null, "exitCode": null, "executedAt": null, "testCount": null, "evidence": [] },
+    { "id": "build", "kind": "build", "status": "pending", "command": null, "exitCode": null, "executedAt": null, "evidence": [] }
+  ],
+  "bugs": []
+}

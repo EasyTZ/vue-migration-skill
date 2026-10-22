@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/EasyTZ/vue-migration-skill/actions/workflows/ci.yml"><img src="https://github.com/EasyTZ/vue-migration-skill/actions/workflows/ci.yml/badge.svg" alt="辅助脚本 CI" /></a>
+  <a href="https://github.com/EasyTZ/vue-migration-skill/actions/workflows/benchmark.yml"><img src="https://github.com/EasyTZ/vue-migration-skill/actions/workflows/benchmark.yml/badge.svg" alt="合成迁移评测" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/许可证-MIT-42b883?style=flat-square" alt="MIT 许可证" /></a>
   <img src="https://img.shields.io/badge/状态-预览版-62a8ef?style=flat-square" alt="预览版" />
 </p>
@@ -110,6 +111,8 @@ npm view npm@latest version engines --json
 | ⚡ 多代理协作 | 按依赖关系拆分独立模块，分配文件所有权，统一集成共享配置 | 可追踪的任务分工与集成结果 |
 | 🧪 分批验证 | 执行适用的静态检查、测试、构建、SFC 编译、行为与视觉对拍 | 每批实际结果、允许差异及验收缺口 |
 | 🧭 中断续作 | 持久化当前批次、改动、失败项、命令及下一步 | 可恢复的检查点和迁移台账 |
+| 🔄 源增量检测 | 对源码、配置、锁文件及资源建立内容指纹，检测迁移期间的新增/修改/删除 | 不覆盖旧基线的增量报告，提示分析影响并重验 |
+| 📊 覆盖与状态报告 | 汇总源文件映射、已登记入口、架构层、检查和缺陷；核对指纹及证据引用 | JSON + Markdown 报告，显式列出未登记、过期与未验收项 |
 
 ## 整体架构迁移范围
 
@@ -252,6 +255,24 @@ flowchart LR
 
 ## 常用任务示例
 
+### 检测源变化并查看迁移覆盖
+
+首次建立控制目录后运行；所有输出都留在控制目录内，不覆盖同名文件：
+
+```sh
+node "<Skill目录>/scripts/source-snapshot.mjs" "<控制目录>" "inventory/source-baseline-01.json"
+node "<Skill目录>/scripts/init-status.mjs" "<控制目录>" "inventory/source-baseline-01.json"
+```
+
+主代理根据实际入口、架构、检查和缺陷维护生成的 `migration-status.json`。每批开始前检测增量，结束后生成报告：
+
+```sh
+node "<Skill目录>/scripts/check-source.mjs" "<控制目录>" "inventory/source-baseline-01.json" "evidence/source-delta-01.json"
+node "<Skill目录>/scripts/migration-report.mjs" "<控制目录>" "migration-status.json" "evidence/report-01.json" "evidence/report-01.md"
+```
+
+增量检查退出码 `2` 表示源发生变化；覆盖报告退出码 `2` 表示仍有待处理项。二者都不应被当作“执行成功所以全部完成”。`reviewReady` 只检查记录、文件及证据引用是否齐备，不验证证据内容，也不代表业务人工验收。重新运行时使用新的报告名，发现源变化后由主代理分析影响，不能自动用新指纹覆盖旧结论。详见[增量与覆盖指南](references/progress-tracking.md)。
+
 <details>
 <summary><strong>接手已经进行中的迁移</strong></summary>
 
@@ -318,10 +339,29 @@ SFC 巡检需预先安装与目标 Vue 编译链匹配的编译器及所需预�
 
 ## 验证状态
 
+### 可公开复现的合成评测
+
+[benchmarks/](benchmarks/README.md) 提供虚构设备台账：固定 Vue 2 输入、两个已知 BUG、Vue 3 + Vite 参考实现，以及能对独立目标运行的逻辑和浏览器验收器。没有真实项目代码、账号或业务数据。
+
+- 源包含 mixin、filter、旧作用域插槽、列表和编辑表单。
+- 目标应修复“零库存无法保存”和“旧查询结果覆盖新查询”，同时保持正常操作。
+- Node 契约验证六类逻辑行为；独立 Playwright 工具验证实际列表、校验、保存、查询竞态及运行错误。
+- 参考依赖与锁文件是评测快照，不是所有迁移项目的固定技术栈；盲评时不向被测智能体提供参考答案。
+
+完成独立迁移后，在仓库根目录执行：
+
+```sh
+node benchmarks/evaluate.mjs "<目标工程目录>"
+node benchmarks/browser/evaluate.mjs http://127.0.0.1:4175
+```
+
+第一条会导入目标的公开 `src/domain.mjs`，仅对可信目标使用；第二条要求目标已构建并在对应本地地址预览，且已安装独立浏览器工具。安装步骤、验收导出与测试标识见[评测使用说明](benchmarks/README.md)。参考实现验证与智能体独立迁移结果分别记录，均不替代真实业务项目验收。
+
 | 范围 | 状态 |
 |---|---|
-| 辅助脚本本地测试 | Windows / Node 22.21.1：14 项，13 通过、1 项不适用跳过，0 失败 |
+| 辅助脚本与合成逻辑测试 | Windows / Node 22.21.1 本地运行通过；部分文件系统相关用例因平台或权限跳过，具体覆盖见 tests/ |
 | 跨系统 CI | 已配置 Windows、Linux、macOS × Node 22/24；实际结果见顶部 CI 徽章与 [Actions](https://github.com/EasyTZ/vue-migration-skill/actions) |
+| 合成 Vue 2 / Vue 3 参考样板 | 公开可复现；构建、领域逻辑及页面验证范围见 benchmarks/README.md，独立 CI 单列执行 |
 | Codex 文件操作与子代理 | 本仓库维护过程已使用；完整项目迁移需另行验证 |
 | Claude Code、搭载 DeepSeek 的宿主 | 已提供平台适配规则，实际执行待验证 |
 | 真实业务项目端到端迁移 | 暂无公开验证报告 |
@@ -332,7 +372,7 @@ SFC 巡检需预先安装与目标 Vue 编译链匹配的编译器及所需预�
 node --test
 ```
 
-测试覆盖脚本语法、文档引用、初始化不覆盖、源文件保护、依赖清单透传、工程边界及错误路径。智能体评测方法见 [EVALUATION.md](EVALUATION.md)。
+测试覆盖脚本语法、文档引用、初始化不覆盖、源文件保护、源增量、机器覆盖状态、依赖清单透传、工程边界及合成缺陷契约。不安装浏览器依赖也能运行此命令；实际页面测试由独立评测工作流运行。智能体评测方法见 [EVALUATION.md](EVALUATION.md)。
 
 ## 文档导航
 
@@ -343,6 +383,7 @@ node --test
 | 最新稳定依赖如何选择 | [依赖策略](references/dependency-policy.md) |
 | 目标工程如何组织 | [目标工程契约](references/target-template.md) |
 | Vite 等整体工程架构如何迁移 | [工程架构迁移](references/architecture-migration.md) |
+| 源代码继续开发时如何同步、如何统计覆盖 | [增量与覆盖指南](references/progress-tracking.md) |
 | 旧写法与组件适配要点 | [兼容性检查](references/compatibility.md) |
 | 贡献规则与变更记录 | [贡献指南](CONTRIBUTING.md) · [版本记录](CHANGELOG.md) |
 

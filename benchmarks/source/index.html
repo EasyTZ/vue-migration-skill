@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>合成设备台账 · Vue 2 源工程</title></head>
+<body><div id="app">
+  <h1>合成设备台账</h1><p>仅使用公开合成数据，无账号、真实接口或生产写操作。</p>
+  <label>查询 <input data-testid="query" v-model="query"></label><button data-testid="search" @click="search">查询</button>
+  <entry-list :items="items"><template slot-scope="{ item }"><span data-testid="item">{{ displayName(item) }}：{{ item.quantity | count }}</span></template></entry-list>
+  <form @submit.prevent="save"><label>名称 <input data-testid="name" v-model="draft.name"></label><label>数量 <input data-testid="quantity" type="number" v-model.number="draft.quantity"></label><button data-testid="save">保存</button></form>
+  <p role="alert" data-testid="error">{{ error }}</p><output data-testid="saved">{{ saved }}</output>
+</div><script type="module" src="./src/app.mjs"></script></body></html>

@@ -1,0 +1,44 @@
+name: 合成迁移样板构建
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: 安装并构建固定 Vue 2 输入
+        working-directory: benchmarks/source
+        run: |
+          npm ci
+          npm run build
+      - name: 安装并构建 Vue 3 参考实现
+        working-directory: benchmarks/reference-target
+        run: |
+          npm ci
+          npm run build
+      - name: 验证缺陷输入与修复契约
+        run: node --test tests/benchmark.test.mjs
+      - name: 安装独立浏览器评测器
+        working-directory: benchmarks/browser
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: 验证真实页面的已知缺陷与修复
+        shell: bash
+        run: |
+          node benchmarks/serve.mjs benchmarks/source/dist 4174 &
+          SOURCE_PID=$!
+          node benchmarks/serve.mjs benchmarks/reference-target/dist 4175 &
+          TARGET_PID=$!
+          trap 'kill "$SOURCE_PID" "$TARGET_PID"' EXIT
+          node benchmarks/browser/evaluate.mjs http://127.0.0.1:4174 --expect-source-bugs
+          node benchmarks/browser/evaluate.mjs http://127.0.0.1:4175

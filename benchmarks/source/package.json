@@ -1,0 +1,8 @@
+{
+  "name": "vue-migration-synthetic-source",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": { "build": "node build.mjs", "preview": "node ../serve.mjs dist 4174" },
+  "dependencies": { "vue": "2.7.16" }
+}

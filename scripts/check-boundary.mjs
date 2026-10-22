@@ -55,7 +55,14 @@ async function scanTarget(dir, depth) {
           && parsed.control && typeof parsed.control.root === 'string';
         const inventory = typeof parsed.sourceRoot === 'string' && typeof parsed.generatedAt === 'string'
           && Array.isArray(parsed.files) && typeof parsed.componentCount === 'number';
-        if (migrationConfig || inventory) violations.push(`迁移配置或普查快照出现在新工程：${label}`);
+        const sourceSnapshot = parsed.schemaVersion === 1 && typeof parsed.sourceRoot === 'string'
+          && typeof parsed.fingerprint === 'string' && Array.isArray(parsed.files) && parsed.policy?.algorithm === 'sha256';
+        const migrationStatus = parsed.schemaVersion === 1 && typeof parsed.baselineSnapshot === 'string'
+          && Array.isArray(parsed.files) && Array.isArray(parsed.entries) && Array.isArray(parsed.architecture) && Array.isArray(parsed.checks);
+        const progressReport = parsed.schemaVersion === 1 && typeof parsed.sourceRoot === 'string'
+          && typeof parsed.baselineFingerprint === 'string' && typeof parsed.currentFingerprint === 'string'
+          && (typeof parsed.changed === 'boolean' || typeof parsed.reviewReady === 'boolean');
+        if (migrationConfig || inventory || sourceSnapshot || migrationStatus || progressReport) violations.push(`迁移配置、状态或源快照出现在新工程：${label}`);
         else if (configKeys.some(key => Object.hasOwn(parsed, key))) warnings.push(`JSON 含候选过程字段，请人工确认，不自动移动：${label}`);
       }
     } catch { /* 非 JSON 或无需解析，忽略 */ }
