@@ -69,7 +69,7 @@ node <skill目录>/scripts/inventory.mjs <源工程> <控制目录>/inventory/so
 
 ## 2. 工程骨架
 
-读 [references/target-template.md](references/target-template.md)。按依赖策略实时核验最新稳定版本、Node/浏览器兼容性及 peer 约束，建立经过验证的版本快照。已有工程不覆盖、不重建，但必须复核其版本与写法，不能把既有旧依赖当作豁免。
+读 [references/target-template.md](references/target-template.md) 和 [references/architecture-migration.md](references/architecture-migration.md)。覆盖构建工具（如 Vue CLI/webpack → Vite 候选路线）、语言检查、路由状态、UI、请求、测试与 CI/部署等实际架构层，在迁移规范记录源实现到目标方案及其验收场景；不只改组件。按依赖策略实时核验最新稳定版本、Node/浏览器兼容性及 peer 约束，建立经过验证的版本快照。已有工程不覆盖、不重建，但必须复核其版本与写法，不能把既有旧依赖当作豁免。
 
 新建空工程可用附带的清单初始化器；它要求 `project.json.targetManifest` 已按项目选型填写目标清单及已核验的依赖声明，不会自行联网、安装或覆盖文件：
 

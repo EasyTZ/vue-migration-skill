@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" fill="none" role="img" aria-labelledby="title description">
   <title id="title">Vue Migration Skill</title>
-  <desc id="description">从 Vue 2 到现代 Vue 3：依赖自适应、代码改写、缺陷修复与多智能体协作。</desc>
+  <desc id="description">Vue 3、Vite 与工程架构现代化：依赖自适应、代码改写、缺陷修复与多智能体协作。</desc>
   <defs>
     <linearGradient id="bg" x2="1200" y2="320" gradientUnits="userSpaceOnUse"><stop stop-color="#101E2D"/><stop offset="1" stop-color="#071711"/></linearGradient>
     <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" stroke="#A6E8CD" stroke-opacity=".055"/></pattern>
@@ -12,7 +12,7 @@
   <g font-family="Inter, Segoe UI, Microsoft YaHei, sans-serif">
     <text x="76" y="63" fill="#99CDB8" font-size="15" font-weight="600" letter-spacing="3">面向 AI 编程智能体的迁移工作流</text>
     <text x="56" y="134" fill="#F1FFF8" font-size="53" font-weight="750" letter-spacing="-1.5">Vue Migration Skill</text>
-    <text x="58" y="178" fill="#B5CDBF" font-size="21">让旧项目走向现代 Vue，让每一步迁移都有据可查。</text>
+    <text x="58" y="178" fill="#B5CDBF" font-size="21">Vue 3 · Vite · 工程架构现代化，按项目选择迁移路线。</text>
     <rect x="58" y="218" width="132" height="36" rx="18" stroke="#34584B" fill="#132B23"/>
     <rect x="202" y="218" width="132" height="36" rx="18" stroke="#34584B" fill="#132B23"/>
     <rect x="346" y="218" width="132" height="36" rx="18" stroke="#34584B" fill="#132B23"/>

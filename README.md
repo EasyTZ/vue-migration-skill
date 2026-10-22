@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Vue Migration Skill：从 Vue 2 到现代 Vue 3" width="100%" />
+  <img src="assets/banner.svg" alt="Vue Migration Skill：Vue 3、Vite 与工程架构现代化迁移" width="100%" />
 </p>
 
 <p align="center">
@@ -8,11 +8,12 @@
   <img src="https://img.shields.io/badge/状态-预览版-62a8ef?style=flat-square" alt="预览版" />
 </p>
 
-<p align="center"><strong>按项目选择依赖 · 按新框架改写代码 · 边迁移边修复 BUG · 多智能体并行推进</strong></p>
+<p align="center"><strong>Vue 3 + 现代构建与工程架构 · 依赖自适应 · BUG 修复 · 多智能体协作</strong></p>
 
 <p align="center">
   <a href="#快速开始">快速开始</a> ·
   <a href="#功能一览">功能一览</a> ·
+  <a href="#整体架构迁移范围">架构迁移</a> ·
   <a href="#安装到你的智能体">安装到你的智能体</a> ·
   <a href="#迁移如何进行">迁移流程</a> ·
   <a href="https://github.com/EasyTZ/vue-migration-skill/issues">反馈问题</a>
@@ -20,7 +21,7 @@
 
 # Vue Migration Skill
 
-将 Vue 2 项目迁移到现代 Vue 3 的 AI 编程技能。它把项目普查、依赖决策、代码改写、缺陷修复、并行分工和分批验收组织成可持续执行的流程，帮助智能体处理整仓迁移，也能接手已经进行中的迁移工程。
+面向 Vue 2 老工程的**整仓架构现代化迁移 Skill**。迁移范围覆盖 Vue 3 组件、Vue CLI / webpack 到 Vite 等现代构建方案、路由与状态、UI 组件库、请求与权限、语言与类型、测试及 CI/CD；按项目实际用途组织成可持续执行的改写、缺陷修复和验收流程，也能接手已经进行中的迁移工程。
 
 **你提供源工程、目标目录和必要的业务约束，智能体按项目实际情况推进迁移。** UI、请求、状态和构建工具由项目用途及生态兼容性决定；版本在执行时查询，优先改写旧代码以使用最新稳定依赖。
 
@@ -60,6 +61,8 @@ git clone https://github.com/EasyTZ/vue-migration-skill.git
 
 先检查宿主能力、项目规则、依赖及实际使用点，再确定目标技术路线。
 执行时核验最新稳定依赖，按目标框架推荐方式改写旧代码。
+评估 Vue CLI/webpack 到 Vite 的构建迁移，以及路由、状态、UI、请求层、类型、测试和部署架构。
+逐层说明目标方案、配置改写和验收方式；具体依赖按项目选择，不套固定技术栈。
 迁移过程中排查并修复有证据、正确预期明确的 BUG，补充回归验证。
 保留源工程既有文件；过程资料放源工程 migration 控制目录。
 支持子代理时，按独立模块并行执行，共享配置和锁文件统一管理。
@@ -76,10 +79,68 @@ git clone https://github.com/EasyTZ/vue-migration-skill.git
 | 🔎 项目普查 | 阅读清单、锁文件、入口、调用链和部署配置；识别旧语法及候选风险 | 源码快照、入口清单、风险与前置条件 |
 | 🧩 依赖自适应 | 按真实用途决定升级、替换、删除或新增；核验维护状态、稳定版本及 peer/engine 约束 | 依赖映射、版本矩阵、选择依据 |
 | ✨ 现代化改写 | 使用 Vue 3 组合式能力，拆解隐式依赖和 mixin，更新组件、路由、状态及构建调用 | 符合目标生态的源码与配置 |
+| 🏗️ 工程架构迁移 | 评估 Vite 等构建路线，贯通语言检查、插件、资源、运行配置、测试与部署 | 目标架构映射、工具链配置与部署验证 |
 | 🛠️ 同步修复 BUG | 检查空值、竞态、重复提交、校验、资源释放和会话残留；确认后修复 | 缺陷记录、修复差异、回归证据 |
 | ⚡ 多代理协作 | 按依赖关系拆分独立模块，分配文件所有权，统一集成共享配置 | 可追踪的任务分工与集成结果 |
 | 🧪 分批验证 | 执行适用的静态检查、测试、构建、SFC 编译、行为与视觉对拍 | 每批实际结果、允许差异及验收缺口 |
 | 🧭 中断续作 | 持久化当前批次、改动、失败项、命令及下一步 | 可恢复的检查点和迁移台账 |
+
+## 整体架构迁移范围
+
+目标覆盖从开发、构建到运行和交付的完整工程。对于常见 Vue CLI / webpack 业务应用，会评估 **Vue 3 + Vite** 路线，并按实际需求搭配 Router、Pinia、TypeScript、UI 库和测试工具；SSR、组件库、微前端等工程则采用匹配其入口和宿主的方案。
+
+**下表是常见迁移路线与工作范围，具体包名和版本由源项目分析后确定，不是强制安装清单。** Vue 官方工具链说明将 Vite 作为新工程的推荐选择；依赖特定 webpack 能力的工程仍需先评估替代路线。[官方工具链说明](https://vuejs.org/guide/scaling-up/tooling)
+
+| 架构层 | 常见源工程 | 目标方向示例 | 实际改写与验收内容 |
+|---|---|---|---|
+| Vue 运行时与组件 | Vue 2、Options/class、mixin、旧插槽及 `.sync` | Vue 3、`<script setup>`、Composition API、composables | props/emits、双向绑定、生命周期、响应性、实例暴露、组件副作用 |
+| 构建与开发服务 | Vue CLI、webpack、Babel、旧 loader/plugin | Vite 与 Vue 插件，或匹配宿主的现代工具链 | 入口、ESM、插件能力映射、alias、代理、环境变量、动态导入、资源加载 |
+| 路由与导航 | 旧 Router API、动态路由、权限菜单、页签缓存 | Vue 3 兼容路由方案，如 Vue Router | hash/history、base、守卫、query/params、懒加载、刷新直达、缓存和权限继承 |
+| 状态与共享能力 | Vuex、mixin 状态、全局原型、事件总线 | 如需状态库评估 Pinia；局部逻辑采用 composables / 显式服务 | action 返回值、订阅、持久化键、退出清理、状态响应性及生命周期 |
+| UI、样式与图标 | Element UI 或其他 Vue 2 组件库、旧图标、私有样式覆盖 | 对应 Vue 3 组件库；如 Element Plus，或项目适合的替代方案 | 组件 API、插槽、表单校验、弹窗时序、主题、语言、样式加载和视觉回归 |
+| 请求与会话 | 分散的 Axios 调用或自定义请求、拦截器、Token/Cookie | 受维护的请求方案与统一领域 API 层 | URL/字段、错误反馈、取消与竞态、刷新会话、上传下载、CSRF 及退出行为 |
+| 语言与类型 | JS、旧 TS 配置、装饰器和补丁声明 | 保留 JS 并强化检查，或按目标采用 TypeScript / Vue 类型检查工具 | 接口类型、组件契约、配置文件检查、模块解析；避免全仓 any 掩盖问题 |
+| 资源与外部能力 | 动态 require、字体、Canvas、图表、地图、Worker | 对应目标版本公开 API 与现代资源入口 | 生产 URL、共享资源所有权、实例销毁、重进页面、初始化取消和错误恢复 |
+| 测试与质量 | Jest/旧 runner、依赖旧组件实现的测试、缺少自动化 | 如 Vitest、Vue Test Utils、Playwright，或项目适合的工具 | 迁移测试配置与断言，覆盖关键组件、业务链路、源 BUG 回归及新旧对拍 |
+| 运行环境与交付 | 旧 Node、混杂锁文件、旧构建命令、固定部署路径 | 匹配依赖的受支持运行时、统一包管理器、可复现安装与 CI/CD | 安装、lint/静态检查、test/build、产物目录、子路径、路由回退、缓存和配置注入 |
+
+### Vite 迁移具体做哪些工作
+
+选定 Vite 后，依据源配置的实际功能逐项改写：
+
+1. **入口与模块**：迁移 HTML/应用入口和模块导入；调整 alias、动态导入、`require.context` 等用法，验证所有公开入口和懒加载模块。
+2. **配置与代理**：将实际使用的开发代理、公开环境变量、mode、base 和运行时配置映射到目标配置。仅暴露允许进入前端的变量，保留部署时注入配置的契约。
+3. **插件与资源**：对每个 loader/plugin 记录“内置能力覆盖 / 新插件 / 代码改写 / 删除”；核对 Sass/Less、SVG、字体、图标、自动导入和样式顺序。浏览器代码依赖 Node 内置模块时先评估替换，避免无差别注入垫片。
+4. **生产构建**：调整 scripts、编译目标、资源 base、产物目录和 source map 策略；按实际需要处理拆包、Worker、SSR 或库构建。配置选项按执行时 Vite 官方文档核验，不照搬旧版本配置。
+5. **部署验证**：运行真实产物，检查子路径、直达刷新、资源与 chunk URL、环境配置及服务端路由回退；比较可测量的启动、构建和页面性能，不预设提速比例。
+
+### 一个典型业务应用的目标结构
+
+下面展示职责如何组织。仅在项目选择相应方案时创建目录与配置，SSR、库或 workspace 按其形态调整。
+
+```text
+目标工程/
+├── src/
+│   ├── api/                请求实例、拦截器与领域接口
+│   ├── components/         共享组件及 UI 封装
+│   ├── composables/        可复用状态与生命周期逻辑
+│   ├── router/             路由、导航守卫与动态入口
+│   ├── stores/             确实需要跨页面共享的状态
+│   ├── views/              业务页面及页面内组件
+│   ├── assets/             源码引用的图片、字体等资源
+│   ├── styles/             主题、基础样式及组件覆盖
+│   ├── App.vue             应用外壳
+│   └── main.ts 或 main.js  应用入口与插件注册
+├── public/                 按公开路径提供的资源
+├── tests/                  项目自身的回归测试
+├── index.html              Vite 应用的 HTML 入口
+├── vite.config.*           构建、代理与插件配置
+├── 语言、lint、测试配置      按选型建立
+├── package.json 与锁文件
+└── .env.example            无凭证的公开配置示例
+```
+
+迁移产出的架构说明会记录每层的**源实现 → 目标方案 → 改写范围 → 验证证据**。Vite、Pinia 或新的 UI 库只是选型的一部分，能安装不等于调用、运行及部署契约已迁移完成。详细执行检查见[工程架构迁移](references/architecture-migration.md)。
 
 ### 依赖选择随项目而定
 
@@ -255,6 +316,7 @@ node --test
 | 项目普查与工程约束 | [准入与普查](references/assessment.md) |
 | 最新稳定依赖如何选择 | [依赖策略](references/dependency-policy.md) |
 | 目标工程如何组织 | [目标工程契约](references/target-template.md) |
+| Vite 等整体工程架构如何迁移 | [工程架构迁移](references/architecture-migration.md) |
 | 旧写法与组件适配要点 | [兼容性检查](references/compatibility.md) |
 | 贡献规则与变更记录 | [贡献指南](CONTRIBUTING.md) · [版本记录](CHANGELOG.md) |
 
