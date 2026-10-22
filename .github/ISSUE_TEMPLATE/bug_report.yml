@@ -1,0 +1,39 @@
+name: 问题报告
+description: 报告可复现的脚本、迁移规则或平台适配问题
+title: "[问题] "
+body:
+  - type: markdown
+    attributes:
+      value: 请先脱敏，不要粘贴凭证、客户数据或未经授权的源码。安全问题不要公开可利用细节。
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境与版本
+      description: 操作系统、Node、宿主/客户端、模型、Skill 提交或版本、包管理器及项目形态。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤与最小输入
+      description: 提供可公开的最小复现和完整命令，说明源/目标/控制目录关系；不要提供真实绝对路径中的私人信息。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为与依据
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为与证据
+      description: 脱敏错误、退出码、日志及已执行检查；区分脚本错误与智能体未遵循规则。
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 影响范围与临时处理
+      description: 是否存在覆盖、越界、数据风险，以及目前采取的处理。

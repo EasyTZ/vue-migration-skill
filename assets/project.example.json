@@ -1,0 +1,35 @@
+{
+  "sourceRoot": null,
+  "targetRoot": null,
+  "control": {
+    "root": null,
+    "evidenceDirectory": "evidence",
+    "toolsDirectory": "tools",
+    "trackedInSourceVcs": null
+  },
+  "packageManager": null,
+  "nodeVersion": null,
+  "packageManagerVersion": null,
+  "dependencyPolicy": {
+    "channel": "latest-stable",
+    "verifiedAt": null,
+    "registry": null,
+    "matrixFile": "迁移规范.md",
+    "exceptions": []
+  },
+  "browsers": [],
+  "targetManifest": {
+    "name": null,
+    "private": true,
+    "scripts": {},
+    "dependencies": {},
+    "devDependencies": {}
+  },
+  "dependencyDecisions": [],
+  "routing": { "mode": null, "base": null, "queryContract": null },
+  "contracts": { "runtimeConfig": null, "authStorageKeys": [], "requestKeyCase": null, "moneyUnits": null },
+  "baseline": { "sourceCommand": null, "sourceUrl": null, "targetUrl": null, "testData": null },
+  "verification": { "commands": {}, "scenarios": [] },
+  "acceptedDifferences": [],
+  "pendingDecisions": []
+}
