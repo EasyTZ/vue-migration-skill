@@ -60,6 +60,20 @@ test('初始化控制目录可重跑，保留人工内容及源码', async t => 
   for (const name of ['inventory', 'evidence', 'tools']) assert.ok((await fs.stat(path.join(f.control, name))).isDirectory());
 });
 
+test('初始化生成的台账把路由与入口列为独立对照表', async t => {
+  const f = await fixture(t);
+  const ledger = await fs.readFile(path.join(f.control, '迁移台账.md'), 'utf8');
+  const section = /## 路由与入口对照\n([\s\S]*?)(?:\n## |$)/.exec(ledger);
+  assert.ok(section, '迁移台账缺少“路由与入口对照”一节');
+  const header = /^\|(.+)\|\s*$/m.exec(section[1])?.[1];
+  assert.ok(header, '路由对照缺少表头');
+  const columns = header.split('|').map(cell => cell.trim());
+  // 列名就是核对口径：能填完这七列，才说明该页面的跳转来源和可达性被真正对过账。
+  for (const column of ['源路径', '目标路径', '菜单可见', '跳转来源（菜单/按钮/返回/外链）', '目标组件文件', '可达性状态', '证据（控制目录相对路径）']) {
+    assert.ok(columns.includes(column), `路由对照缺少列：${column}`);
+  }
+});
+
 test('控制目录不能复用源根目录、源码子目录或已有工程目录', async t => {
   const f = await fixture(t);
   run('init-control.mjs', [f.source, f.source], 1);
