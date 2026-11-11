@@ -225,3 +225,62 @@ test('SFC 巡检对未安装编译器明确失败，不误报通过', async t =>
   const result = run('check-sfc.mjs', [f.target], 1);
   assert.match(result.stderr, /@vue\/compiler-sfc/);
 });
+
+test('SFC 巡检拦截 Vue 2 过渡类名与 transition 内嵌 router-view', async t => {
+  const f = await fixture(t);
+  await fs.mkdir(f.target, { recursive: true });
+  await writeJson(path.join(f.target, 'package.json'), { private: true });
+  // 编译本身要过，才能证明失败来自过渡扫描而不是编译器；这里用最小编译器桩。
+  const compilerDir = path.join(f.target, 'node_modules', '@vue', 'compiler-sfc');
+  await fs.mkdir(compilerDir, { recursive: true });
+  await writeJson(path.join(compilerDir, 'package.json'), { name: '@vue/compiler-sfc', version: '0.0.0', main: 'index.js' });
+  await fs.writeFile(path.join(compilerDir, 'index.js'), [
+    'module.exports = {',
+    '  parse: () => ({ descriptor: { script: null, scriptSetup: null, template: null, styles: [] }, errors: [] }),',
+    '  compileScript: () => ({ bindings: {} }),',
+    '  compileTemplate: () => ({ errors: [] }),',
+    '  compileStyleAsync: async () => ({ errors: [] }),',
+    '};',
+    '',
+  ].join('\n'), 'utf8');
+  const src = path.join(f.target, 'src');
+  await fs.mkdir(src, { recursive: true });
+  const page = path.join(src, 'Home.vue');
+  // 旧写法：Vue 2 过渡类名 + <transition> 里直接嵌 router-view（编译都能过）
+  await fs.writeFile(page, '<template><transition name="move"><router-view /></transition></template>\n<style>.move-enter, .move-leave { opacity: 0 }</style>\n', 'utf8');
+  const broken = run('check-sfc.mjs', [f.target], 1);
+  assert.match(broken.stderr, /\.move-enter/);
+  assert.match(broken.stderr, /router-view/);
+  // 正确写法：-enter-from/-leave-to + v-slot 包 component
+  await fs.writeFile(page, [
+    '<template><router-view v-slot="{ Component }"><transition name="move" mode="out-in">',
+    '<component :is="Component" /></transition></router-view></template>',
+    '<style>.move-enter-from, .move-leave-to { opacity: 0 }',
+    '.move-enter-active, .move-leave-active { transition: opacity .15s }</style>',
+    '',
+  ].join('\n'), 'utf8');
+  run('check-sfc.mjs', [f.target], 0);
+  // 注释里说明旧类名不能被算作遗留代码，否则没人敢写这条注释
+  await fs.writeFile(page, [
+    '<template><router-view v-slot="{ Component }"><transition name="move">',
+    '<component :is="Component" /></transition></router-view></template>',
+    '<style>',
+    '/* 旧版是 .move-enter / .move-leave，Vue 3 里不生效 */',
+    '.move-enter-active { transition: opacity .15s }',
+    '</style>',
+    '',
+  ].join('\n'), 'utf8');
+  const commented = run('check-sfc.mjs', [f.target], 0);
+  assert.match(commented.stdout, /0 处 Vue 2 类名/);
+  // PascalCase <Transition> 与无 name 的 <transition>（默认前缀 v-）是最常见写法，漏掉等于规则失效
+  await fs.writeFile(page, [
+    '<template><Transition name="page"><div /></Transition><transition><div /></transition></template>',
+    '<style>.page-enter { opacity: 0 } .v-enter { opacity: 0 }</style>',
+    '',
+  ].join('\n'), 'utf8');
+  const aliases = run('check-sfc.mjs', [f.target], 1);
+  assert.match(aliases.stderr, /\.page-enter/);
+  assert.match(aliases.stderr, /\.v-enter/);
+  assert.match(aliases.stderr, /默认前缀 v-/);
+  assert.match(aliases.stdout, /2 处 Vue 2 类名/);
+});

@@ -73,6 +73,8 @@ node <skill目录>/scripts/inventory.mjs <源工程> <控制目录>/inventory/so
 
 读 [references/target-template.md](references/target-template.md) 和 [references/architecture-migration.md](references/architecture-migration.md)。覆盖构建工具（如 Vue CLI/webpack → Vite 候选路线）、语言检查、路由状态、UI、请求、测试与 CI/部署等实际架构层，在迁移规范记录源实现到目标方案及其验收场景；不只改组件。按依赖策略实时核验最新稳定版本、Node/浏览器兼容性及 peer 约束，建立经过验证的版本快照。已有工程不覆盖、不重建，但必须复核其版本与写法，不能把既有旧依赖当作豁免。
 
+命中 UI 组件库时，组件库的**样式与几何契约**（控件宽高、栅格、表格行高、弹窗/抽屉内边距）也是架构层的一部分：先按 [references/ui-style-migration.md](references/ui-style-migration.md) 建一个跟在库 CSS 之后的全局样式适配层，再迁页面；不要逐页手工修同一组尺寸，也不要把源码里写过的旧值直接当基线。
+
 新建空工程可用附带的清单初始化器；它要求 `project.json.targetManifest` 已按项目选型填写目标清单及已核验的依赖声明，不会自行联网、安装或覆盖文件：
 
 ```sh
@@ -83,7 +85,7 @@ node <skill目录>/scripts/init-target.mjs <目标目录> <控制目录>/project
 
 ## 3. 分批迁移
 
-读 [references/compatibility.md](references/compatibility.md)；按项目实际依赖选择检查项。以目录、依赖、风险安排批次，公共组件先行，金额及关键业务在基础反馈稳定后迁移；每批大小以能完成验证为准。
+读 [references/compatibility.md](references/compatibility.md)；按项目实际依赖选择检查项。命中 UI 组件库时并读 [references/ui-style-migration.md](references/ui-style-migration.md)，先建立全局样式适配层、再迁页面。以目录、依赖、风险安排批次，公共组件先行，金额及关键业务在基础反馈稳定后迁移；每批大小以能完成验证为准。
 
 每批：
 
@@ -92,7 +94,7 @@ node <skill目录>/scripts/init-target.mjs <目标目录> <控制目录>/project
 3. SFC 优先使用 `<script setup>` 与组合式 API，按选定语言方案决定是否加 `lang="ts"`，按业务职责组织 composables；将 mixin、class/decorator、this 隐式依赖改为显式输入、输出与生命周期。遵循目标版本公开 API，不机械逐行翻译，不把整页复制进一个 setup 函数。保持业务语义。按项目能力集中请求与共享状态；本地页面状态不必引入 store。静态资源不得经过业务鉴权拦截器。
 4. 同构页面先证明字段、插槽、校验和副作用一致，再考虑 schema 化。生成器应附输入、校验和重生成命令，禁止手改生成物。
 5. 接入实际入口与集成点；有路由时保留路径、命名、重定向、权限继承、隐藏菜单、外部入口及动态导入边界，并核对按钮与返回的每个跳转目标都能在目标路由表解析（菜单外的子页面、命名路由最容易漏）；组件库则核对导出、插件安装与消费方。计数相同不足以证明结构一致。
-6. 按 [references/verification.md](references/verification.md) 完成适用的 lint、语言/类型检查、测试和构建门禁，以及全量 SFC 编译、现代化审查、关键行为和新旧对拍。语言检查按 JS/TS 方案配置，不为满足固定命令强制转 TS；不适用项登记理由。首次可达的页面补一次挂载冒烟：门禁抓不到模板运行期问题，页面空白、按钮无响应常在这里暴露。新增入口接入后重跑 build。
+6. 按 [references/verification.md](references/verification.md) 完成适用的 lint、语言/类型检查、测试和构建门禁，以及全量 SFC 编译（含 Vue 2 过渡类名、`<transition>` 内嵌 `<router-view>` 这类静默失效扫描）、现代化审查、组件库样式/几何回归（控件宽高、栅格、表格行高、弹窗/抽屉内边距）、关键行为和新旧对拍。语言检查按 JS/TS 方案配置，不为满足固定命令强制转 TS；不适用项登记理由。首次可达的页面补一次挂载冒烟：门禁抓不到模板运行期问题，页面空白、按钮无响应常在这里暴露。新增入口接入后重跑 build。
 7. 更新台账、机器覆盖状态、缺陷记录与证据，用 migration-report.mjs 生成新名字的 JSON/Markdown 报告并跑边界检查；发现同类风险先普查其他命中，再记录规则。缺陷修复需覆盖触发条件与正常路径回归，对拍按已登记的修复预期判断。报告的 reviewReady 只表示记录可提交复核，不能替代实际检查及人工验收。失败先修复，不能靠删除断言、无差别 stub 或略过页面获得绿灯。
 
 新写的对拍脚本、扫描器、差异工具一律放控制目录 `tools/`，只在控制目录或工程外产生输出；不要为了让工具就近而入驻新工程。源码保留 UTF-8；优先用补丁工具写文件。PowerShell 读写显式使用 UTF-8，避免 Windows PowerShell 5.1 默认编码往返损坏。移除死代码前检查模板、动态访问、外部实例方法与初始化副作用；不确定则保留并登记。

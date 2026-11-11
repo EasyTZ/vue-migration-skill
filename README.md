@@ -319,7 +319,7 @@ node "<Skill目录>/scripts/migration-report.mjs" "<控制目录>" "migration-st
 | 控制目录初始化 | `node "<Skill目录>/scripts/init-control.mjs" "<源工程>" [控制目录]` | 默认创建源工程顶层 `migration/`，保留已有文件 |
 | 源码普查 | `node "<Skill目录>/scripts/inventory.mjs" "<源工程>" "<控制目录>/inventory/source-01.json"` | 生成源码与候选风险快照，拒绝覆盖已有快照 |
 | 目标清单初始化 | `node "<Skill目录>/scripts/init-target.mjs" "<目标工程>" "<控制目录>/project.json"` | 只生成 `package.json`、README 和 `.gitignore`；不安装依赖、不生成固定骨架 |
-| SFC 巡检 | `node "<Skill目录>/scripts/check-sfc.mjs" "<目标工程>"` | 使用目标工程的编译器检查 `src/` 下的 `.vue` 文件 |
+| SFC 巡检 | `node "<Skill目录>/scripts/check-sfc.mjs" "<目标工程>"` | 使用目标工程的编译器检查 `src/` 下的 `.vue` 文件，并按 `<transition name>`（含 `<Transition>` 与无 name 的默认 `v-` 前缀）反查 Vue 2 遗留过渡类名，并报告 `<transition>` 内嵌 `<router-view>` |
 | 工程边界检查 | `node "<Skill目录>/scripts/check-boundary.mjs" "<控制目录>" "<目标工程>"` | 报告误放的过程资料和候选问题，不自动移动文件 |
 
 初始化目标清单前，需按[配置结构](assets/project.example.json)填写控制目录的 `project.json`：
@@ -385,6 +385,7 @@ node --test
 | Vite 等整体工程架构如何迁移 | [工程架构迁移](references/architecture-migration.md) |
 | 源代码继续开发时如何同步、如何统计覆盖 | [增量与覆盖指南](references/progress-tracking.md) |
 | 旧写法与组件适配要点 | [兼容性检查](references/compatibility.md) |
+| 组件库样式/几何差异如何迁 | [组件库样式与几何迁移](references/ui-style-migration.md) |
 | 贡献规则与变更记录 | [贡献指南](CONTRIBUTING.md) · [版本记录](CHANGELOG.md) |
 
 欢迎通过 [Issue](https://github.com/EasyTZ/vue-migration-skill/issues) 提交脱敏最小复现，或通过 PR 补充规则、测试和平台验证。安全问题请按 [SECURITY.md](SECURITY.md) 非公开报告，勿上传凭证、真实业务数据或未经允许的源码。

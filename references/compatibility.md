@@ -10,6 +10,9 @@
 - 带作用域插槽的 template 上，若 v-if 引用了插槽参数，把条件移入插槽内部；引用父作用域的条件可能合法，不要一律改写。
 - 检查 v-if/v-for 优先级、数组 watch 深度、属性透传与多根节点、emits、v-model/.sync、事件总线、filters、functional/render/JSX、Vue.set/delete、$children、$listeners/$scopedSlots、生命周期与插件安装。
 - `<Transition>` 的动画目标需满足元素根约束，`<KeepAlive>` 核对当前活动组件、名称和缓存键；`<TransitionGroup>` 用于带稳定 key 的多个子项，不应强制改成单子项。组件改成多根或插槽透传后，按页面核对过渡、页签缓存和列表动画是否仍在生效。
+- 过渡类名要跟着改名：Vue 2 的 `v-enter` / `v-leave` 在 Vue 3 是 `v-enter-from` / `v-leave-to`（另半套 `v-enter-to` / `v-leave-from` 与 `-active` 一起才完整）。只搬 `-active`、漏改首尾类的后果很特别：不报错、不白屏，但每次切页固定"僵住"一段时间——`-active` 里的 `transition-duration` 仍被 Vue 读走，而属性没有变化，`transitionend` 永不触发，只能等 `setTimeout(duration + 1)` 兜底，`<Transition mode="out-in">` 于是等满整段时长才挂载新组件。实测一条 0.5s 的路由过渡让每次点菜单多等 500ms、还看不到任何淡入淡出；修完顺手把时长收到 150ms 级别，并确认进、出两段都真的在动。过渡样式常写在全局 CSS（如 `main.css` 的 `.move-enter`）而不在 SFC 里，别只查组件；`node <skill目录>/scripts/check-sfc.mjs <目标工程>` 会按 `<transition name>`（含 `<Transition>` 写法与无 name 的默认 `v-` 前缀）反查同名旧类名，注释里提到的旧类名不计入。
+- `<Transition>` 包 `<RouterView>` 在 Vue 3 不成立：要改成 `<router-view v-slot="{ Component }">`，再用 `<transition>` 包 `<component :is="Component" />`。直接嵌 `<router-view>` 时过渡不生效，配套的页签/缓存外壳也会跟着失效。同上一条一并由 check-sfc 报告。
+- `<KeepAlive :include>` 只在组件 `name` 能匹配时才缓存：页签机制被注释掉、`include` 恒为空数组时缓存实际是关着的，每次切页都整页重建并重新请求数据。先确认源工程是否本来就如此——源工程也没启用就属于既有行为，登记体感差异而不是记成迁移漏改；真要开缓存，需要同时恢复页签、给页面补 `defineOptions({ name })`，并接受"返回不刷新"的行为变化。
 - Vue 2 class 构造初始化、装饰器默认值、watch immediate/deep、this 上下文不能仅做文本替换。函数型 prop 的默认值必须仍返回调用方预期的类型，补不传 prop 的运行测试。
 - webpack alias、require.context、动态资源路径、process.env、Buffer/process 等 Node 垫片逐项迁移。`NODE_ENV === development` 不总与 Vite DEV/MODE 等价，按构建发布方式验证。
 - 手动渲染的保留页/多页签：父级 `visibility:hidden` 藏不住 teleport 到 body 的浮层（日期面板、下拉、tooltip），切页后旧页浮层还留在屏幕上，visibility 本身也仍参与绘制。改用独立容器 + `v-show`（display:none）整体停止绘制，并逐页验证切页后无残留、无重复实例。
@@ -18,6 +21,15 @@
 ## UI 库适配（仅在源库与选型命中时）
 
 下列以 Element UI → Element Plus 为例，只在本项目确实选择此路线时使用，不据此安装指定 UI 库。其他 UI 库、无 UI 库或自研组件按源依赖和目标官方指南建立对应检查项。任何具体库名均为条件示例，不是强制依赖表；下列类名、默认值与选择器以目标版本实际 DOM、样式表或源码为准，不照搬其他项目结论。
+
+样式与几何（控件宽高、栅格、表格行高、弹窗/抽屉内边距）的系统排查、全局适配层与验证方法见[组件库样式与几何迁移](ui-style-migration.md)。最容易静默出错、且必须先做全局检查的几条：
+
+- 栅格实现可能从 float 改成 flex：`el-col` 没有 `el-row` 父级时不再浮动，多个列会堆叠或缩窄；用模板 AST 扫一遍所有 `el-col` 的直接父级，别只修报错的那一页。
+- 输入框的背景/边框/圆角可能移到 wrapper，prefix/suffix 从绝对定位改成 flex 子项；只覆盖旧的内层 input 会静默失效。所有页面级 `.el-input__inner` 覆盖逐条复核。
+- 根尺寸变量不一定覆盖全部控件：目标库可能把 select/radio/switch 的 small/large 写死（示例 24/40），checkbox 固定 32，form-item 的行高也写死；按同一套 32/28/36 逐控件覆盖并实测。
+- 表格行高按**旧版实际生效的**单元格留白还原，不按源码意图：页面里权重不足的 4px 覆盖可能从未生效，旧版实际是 8px；横向留白、表内 checkbox/radio 高度也要一起核。
+- 弹窗可能把内边距从“头/体/脚各自 padding”改成根节点统一 16px，自定义弹窗的底色外会多一圈白边；关闭按钮几何也可能从 16×16/20px 变成 48×48/0px。`<style scoped>` 里直接写 `.el-dialog__header` 会因 scope 属性匹配不到目标内部元素，弹窗内部样式放全局层并用唯一类名限定。
+- 上传区、抽屉内容区和行内表单项的默认 box/padding 也可能变（横排/竖排、20px 内边距、32px 项间距），逐页回归。
 
 - Dialog visible.sync 通常映射 v-model；单向 visible + 自定义关闭协议需保留单向语义。before-close、关闭动画、destroy-on-close、Teleport 与首次打开时序实际测试。
 - 不可假设旧 Dialog 首次打开前总有子组件 ref；旧库本身也可能懒渲染。迁移应以源组件实现与调用顺序为准。
