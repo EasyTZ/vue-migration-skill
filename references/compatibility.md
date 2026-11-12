@@ -37,6 +37,7 @@
 - input/select 等受控 value 按目标 API 改 model-value，option 的 value 保留；checkbox/radio 的 label/value 语义按精确版本核对。
 - DatePicker/TimePicker 的 format/value-format 按格式化引擎分别处理：旧常见 yyyy → YYYY、dd（月内日期）→ DD；Day.js dd 是星期缩写，ddd/dddd 保留。单个 d 语义不同。不改 moment 或其他库的格式串。动态绑定和 JS 配置也必须核对。
 - default-time 按目标控件要求转换 Date 或 Date[]，核对时区、范围、清空值和提交串。
+- 可清空控件（select/cascader/date/time picker）的**清空值默认不同**：Element UI 2.x 的 select 清空写回空串，Element Plus 默认 `valueOnClear: undefined`（日期/时间选择器为 `null`，含范围选择）。源工程常把筛选值直接拼进查询串，迁移后会从“无筛选”变成 `txntype=undefined`/`beginDate=null` 这种字面量条件，表现为“清空筛选后查不到数据”；对清空值直接 `.replace()`/`.toString()` 的页面还会抛错。在 `app.use(ElementPlus, { valueOnClear: '' })` 或 `ElConfigProvider` 统一回空串（`valueOnClear` 需 2.7.0+，低版本该配置被静默忽略，只能靠拼参兜底），并在拼参入口（如 `setQueryParams`）把 null/undefined 兜底为空值；补“清空筛选后查询/导出”的回归。
 - cascader 的 checkStrictly/expandTrigger 迁到 props 前核对源是否已有覆盖配置；不能让旧无效属性突然生效。
 - table selection 使用公开 API；校验 prop/rules、validate 返回值、表格布局、分页事件、popover/tooltip、空值和取消行为逐项测试。
 - /deep/、>>> 等改 :deep()，所有 .el-* 内部样式覆盖列清单做视觉回归。纯文本按钮转 link/text 按语义与样式选择。

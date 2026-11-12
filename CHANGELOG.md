@@ -2,6 +2,7 @@
 
 ## 未发布：预览版
 
+- 补充 Element Plus 清空语义与查询区几何检查：可清空控件默认写回 `undefined`（日期/时间选择器为 `null`，含范围），查询表单直接拼串时会出现 `txntype=undefined`，清空筛选后查不到数据；建议全局 `valueOnClear: ''` 并在拼参入口兜底 null/undefined。查询区还要按“所有控件同宽”复量 input/select/date，不能只改下拉。
 - 补充过渡与动画类名检查：Vue 2 的 `v-enter` / `v-leave` 在 Vue 3 是 `v-enter-from` / `v-leave-to`，只搬 `-active` 不会报错，但时长仍被读走、`transitionend` 永不触发，`mode="out-in"` 每次切页静默等满整段过渡时长（实测 0.5s 过渡 = 每次点菜单多等 500ms，且没有任何动画）。`check-sfc.mjs` 现在按 `<transition name>` 反查同名旧类名（含 `<Transition>` 写法与无 name 时的默认 `v-` 前缀）、并报告 `<transition>` 内嵌 `<router-view>`；注释里提到的旧类名不算，补了回归用例。同时说明 `<KeepAlive :include>` 恒空属于源工程既有行为、不能记成迁移漏改。
 - 增加入口与路由可达性对账：普查阶段比对页面文件、路由引用与页面/脚本 import，孤儿页与缺失的跳转目标逐条登记；迁移台账新增“路由与入口对照”表，验收按表逐入口走查。
 - 补充路由与外壳检查：漏登记的菜单外子页面、命名路由丢失、`append` 移除导致相对路径落点变化、兜底重定向与默认页打转、目录型路由空白、菜单高亮错位。
