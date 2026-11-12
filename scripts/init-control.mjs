@@ -73,7 +73,7 @@ const files = {
 
 ## 常用命令
 
-安装、启动、构建、类型检查、lint、测试、SFC 编译巡检。
+安装、启动、构建、类型检查、lint、测试、SFC 编译巡检；托管启动/停止、HTTP 巡检、浏览器审计与复原度报告。
 
 ## 允许差异与已知问题
 
@@ -147,6 +147,8 @@ const files = {
 ## 验收与回滚
 
 验收场景、人工复核点、回滚方式与触发条件。
+
+运行验收以 acceptance.mjs 的复原度门禁为准：记录允许差异、降级条件、浏览器/后端不可用时的待验收范围，以及交付前停止服务与端口释放的核对方式。
 `,
   '检查点.md': `# 检查点
 
@@ -161,7 +163,53 @@ const files = {
 - 失败项与复现步骤：
 - 下一步：
 `,
-  '.gitignore': 'evidence/\n',
+  '运行验收.md': `# 运行验收
+
+> 完成代码迁移不等于交付完成：必须在本机托管启动新工程，跑完自动验收并达到复原度门禁。
+> 命令、实际分数与失败项以 \`evidence/runs/<run-id>/\` 下的 JSON/Markdown 为准，本文件只做索引与结论。
+
+## 托管启动
+
+| 项目 | 值 |
+|---|---|
+| 启动命令（package.json 脚本或 command） |  |
+| 地址 / 端口 |  |
+| 状态文件（控制目录相对路径） |  |
+| 服务日志（控制目录相对路径） |  |
+| 停止后端口释放确认 |  |
+
+## 验收输入
+
+| 文件 | 说明 | 已复核 |
+|---|---|---|
+| \`inventory/capabilities-*.json\` | 从老工程抽取的能力清单 |  |
+| \`runtime/routes.json\` | 源入口 → 目标入口映射 |  |
+| \`runtime/scenarios.json\` | 登录/查询/表单/弹窗/权限等交互场景 |  |
+| \`runtime/capability-status.json\` | 未由场景覆盖的能力核对结论 |  |
+
+## 复原度
+
+| 维度 | 权重 | 通过 / 总数 | 得分 | 证据 |
+|---|---|---|---|---|
+| 渲染与运行时错误 | 0.25 |  |  |  |
+| 视觉与基线相似度 | 0.25 |  |  |  |
+| 交互场景 | 0.25 |  |  |  |
+| 接口调用 | 0.15 |  |  |  |
+| 能力覆盖 | 0.10 |  |  |  |
+| **总分** |  |  |  |  |
+
+## 失败与迭代
+
+| run-id | 时间 | 总分 | 失败项 | 处理与重跑 |
+|---|---|---|---|---|
+
+## 未验证与降级
+
+- 浏览器/后端/账号不可用范围及原因：
+- 已批准的允许差异（批准人、日期）：
+- 仍需人工验收的项：
+`,
+  '.gitignore': 'evidence/\nruntime/*-runtime.json\nruntime/auth*.json\n',
 };
 
 const created = [];
@@ -175,11 +223,11 @@ for (const [name, content] of Object.entries(files)) {
     throw error;
   }
 }
-for (const dir of ['inventory', 'evidence', 'tools']) await fs.mkdir(path.join(control, dir), { recursive: true });
+for (const dir of ['inventory', 'evidence', 'runtime', 'tools']) await fs.mkdir(path.join(control, dir), { recursive: true });
 
 console.log(`控制目录：${control}`);
 console.log(created.length ? `已创建：${created.join('、')}` : '控制目录已有内容，未新建文件');
 if (kept.length) console.log(`已存在，未覆盖：${kept.join('、')}`);
-console.log(`含下列子目录：inventory（普查快照）、evidence（截图与日志，默认不入库）、tools（一次性迁移工具）`);
-console.log('下一步：补齐 project.json 其余字段（未知值用 null），确认控制目录是否纳入源工程版本控制，再运行 inventory.mjs。');
+console.log(`含下列子目录：inventory（普查快照）、evidence（截图与日志，默认不入库）、runtime（验收路由/场景与托管运行状态）、tools（一次性迁移工具）`);
+console.log('下一步：补齐 project.json 其余字段（未知值用 null），确认控制目录是否纳入源工程版本控制，再运行 inventory.mjs 与 extract-capabilities.mjs。');
 console.log('源工程既有文件保持只读；若源工程 lint/tsc/打包会扫描控制目录，先取得用户授权再最小化调整忽略配置。');

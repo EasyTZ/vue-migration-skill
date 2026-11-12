@@ -48,7 +48,7 @@ async function fixture(t) {
     files: snapshot.files.map(file => ({ source: file.path, sourceSha256: file.sha256, targets: ['src/App.vue'], disposition: 'mapped', stage: 'verified', evidence })),
     entries: [{ id: 'main', status: 'verified', sourceFiles: ['src/App.vue'], targets: ['src/App.vue'], evidence }],
     architecture: [{ id: 'runtime', status: 'verified', evidence }],
-    checks: ['lint', 'static', 'test', 'build'].map(kind => ({ id: kind, kind, status: 'passed', command: `synthetic-${kind}`, exitCode: 0, executedAt: '2026-10-22T00:00:00Z', testCount: kind === 'test' ? 1 : undefined, evidence })),
+    checks: ['lint', 'static', 'test', 'build', 'runtime'].map(kind => ({ id: kind, kind, status: 'passed', command: `synthetic-${kind}`, exitCode: 0, executedAt: '2026-10-22T00:00:00Z', testCount: kind === 'test' ? 1 : undefined, evidence })),
     bugs: [{ id: 'BUG-1', status: 'fixed', expected: '零值仍为有效值', basis: '合成样板契约', evidence }],
   };
   return { temp, project, snapshot, ledger, template };
@@ -59,7 +59,7 @@ test('报告仅在源覆盖、入口、架构、检查与缺陷记录完整时�
   const report = await buildReport(f.project, f.snapshot, f.snapshot, f.ledger);
   assert.equal(report.reviewReady, true);
   assert.equal(report.summary.completedFiles, f.snapshot.files.length);
-  assert.equal(report.summary.completedChecks, 4);
+  assert.equal(report.summary.completedChecks, 5);
   assert.equal(report.summary.completedBugs, 1);
   assert.deepEqual(report.problems, []);
   assert.equal(report.sourceChanged, false);
@@ -73,7 +73,7 @@ test('报告仅在源覆盖、入口、架构、检查与缺陷记录完整时�
   const incomplete = await buildReport(f.project, f.snapshot, f.snapshot, pending);
   assert.equal(incomplete.reviewReady, false);
   assert.equal(incomplete.summary.completedFiles, 0);
-  assert.equal(incomplete.summary.completedChecks, 3);
+  assert.equal(incomplete.summary.completedChecks, 4);
 });
 
 test('未登记文件、源文件新增删除和内容变化不会延用旧的全绿结果', async t => {

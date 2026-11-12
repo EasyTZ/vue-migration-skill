@@ -2,6 +2,14 @@
 
 ## 未发布：预览版
 
+- **托管化验收**：新增 `acceptance.mjs` 一键流水线——从老工程抽取能力面、托管启动目标工程、HTTP 路由/资源巡检、浏览器渲染与控制台/请求检查、交互场景、接口覆盖、新旧基线对比、复原度评分，最后停止服务并核对端口释放。每次运行在控制目录 `evidence/runs/<run-id>/` 留下 JSON、Markdown 与截图。
+- 新增能力抽取（`extract-capabilities.mjs`）与验收种子（`init-acceptance.mjs`）：把路由、接口、表单、表格、弹窗、权限、上传下载、打印、图表、地图、实时通信、本地存储等从老工程抓成必需项，提示项与动态入口单独列出；生成 `routes.json`、`scenarios.json`、`capability-status.json`，缺失才创建，不覆盖人工内容。
+- 新增复原度门禁：渲染 0.25、视觉 0.25、交互 0.25、接口 0.15、能力 0.10 五维加权，默认总分 ≥99% 且阻塞项为零；缺少基线、浏览器、托管启停证据或服务未停止都算阻塞/降级，不能靠调低阈值或扩大忽略规则换绿。允许差异必须登记对象、理由、批准人和日期。
+- 新增托管运行（`serve-target.mjs`）：状态、PID、地址、日志写入控制目录；端口占用拒绝启动；进程树停止与端口释放核对；Windows 下日志经内部 wrapper 写入，运行中可读。
+- 新增 HTTP 巡检（`probe-routes.mjs`）、浏览器审计（`browser-audit.mjs`）、复原度报告（`fidelity-report.mjs`）：支持 Playwright 或本机 Chrome/Edge；验收工具装控制目录，不加入目标工程依赖。
+- 新增运行验收文档与配置：`references/auto-acceptance.md`、`references/capability-extraction.md`、`project.json.acceptance`、控制目录 `runtime/` 与 `运行验收.md`；工程边界检查识别验收证据/运行状态误入新工程。
+- 增加截图相似度（纯 Node PNG 解码与 32×32 网格比较）、文本/结构相似度、接口路径归一与后缀匹配，不引入图像依赖。
+- 补充托管启动、能力抽取、评分、HTTP 巡检、边界与运行清理的回归测试。
 - 补充 Element Plus 清空语义与查询区几何检查：可清空控件默认写回 `undefined`（日期/时间选择器为 `null`，含范围），查询表单直接拼串时会出现 `txntype=undefined`，清空筛选后查不到数据；建议全局 `valueOnClear: ''` 并在拼参入口兜底 null/undefined。查询区还要按“所有控件同宽”复量 input/select/date，不能只改下拉。
 - 补充过渡与动画类名检查：Vue 2 的 `v-enter` / `v-leave` 在 Vue 3 是 `v-enter-from` / `v-leave-to`，只搬 `-active` 不会报错，但时长仍被读走、`transitionend` 永不触发，`mode="out-in"` 每次切页静默等满整段过渡时长（实测 0.5s 过渡 = 每次点菜单多等 500ms，且没有任何动画）。`check-sfc.mjs` 现在按 `<transition name>` 反查同名旧类名（含 `<Transition>` 写法与无 name 时的默认 `v-` 前缀）、并报告 `<transition>` 内嵌 `<router-view>`；注释里提到的旧类名不算，补了回归用例。同时说明 `<KeepAlive :include>` 恒空属于源工程既有行为、不能记成迁移漏改。
 - 增加入口与路由可达性对账：普查阶段比对页面文件、路由引用与页面/脚本 import，孤儿页与缺失的跳转目标逐条登记；迁移台账新增“路由与入口对照”表，验收按表逐入口走查。

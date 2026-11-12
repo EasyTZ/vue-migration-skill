@@ -28,7 +28,12 @@ const violations = [];
 const warnings = [];
 const skip = new Set(['node_modules', '.git', 'dist', 'coverage', '.vite', '.idea', 'build', '.output']);
 // 过程资料的固定命名：出现在新工程即为越界。
-const artifacts = /^(迁移台账|迁移规范|迁移计划书|迁移计划|验收报告|检查点|迁移报告|对拍|证据)/;
+const artifacts = /^(迁移台账|迁移规范|迁移计划书|迁移计划|验收报告|检查点|迁移报告|对拍|证据|运行验收|复原度|自动化验收|验收场景|验收路由|能力清单)/;
+// 验收工具产出的机器证据；按 schemaVersion + kind 组合识别，避免误报业务 JSON。
+const acceptanceKinds = new Set([
+  'capability-inventory', 'acceptance-routes', 'acceptance-scenarios', 'capability-status',
+  'http-probe', 'browser-audit', 'restoration-acceptance', 'runtime-state',
+]);
 // 组合特征识别迁移资料；单个同名业务键只提醒，不能据此移动业务文件。
 const configKeys = ['sourceRoot', 'targetRoot', 'controlRoot', 'componentCount'];
 
@@ -40,8 +45,8 @@ async function scanTarget(dir, depth) {
     if (entry.isDirectory()) {
       if (skip.has(entry.name)) continue;
       if (entry.name === 'migration') { violations.push(`过程目录出现在新工程：${label}/`); continue; }
-      if (depth === 0 && ['evidence', 'inventory', 'tools'].includes(entry.name)) {
-        warnings.push(`新工程顶层有 ${label}/，确认它不是迁移过程目录或迁移专用工具`);
+      if (depth === 0 && ['evidence', 'inventory', 'tools', 'runtime'].includes(entry.name)) {
+        warnings.push(`新工程顶层有 ${label}/，确认它不是迁移过程目录、验收运行状态或迁移专用工具`);
       }
       await scanTarget(full, depth + 1);
       continue;
@@ -62,8 +67,10 @@ async function scanTarget(dir, depth) {
         const progressReport = parsed.schemaVersion === 1 && typeof parsed.sourceRoot === 'string'
           && typeof parsed.baselineFingerprint === 'string' && typeof parsed.currentFingerprint === 'string'
           && (typeof parsed.changed === 'boolean' || typeof parsed.reviewReady === 'boolean');
-        if (migrationConfig || inventory || sourceSnapshot || migrationStatus || progressReport) violations.push(`迁移配置、状态或源快照出现在新工程：${label}`);
-        else if (configKeys.some(key => Object.hasOwn(parsed, key))) warnings.push(`JSON 含候选过程字段，请人工确认，不自动移动：${label}`);
+        const acceptanceEvidence = parsed.schemaVersion === 1 && acceptanceKinds.has(parsed.kind);
+        if (migrationConfig || inventory || sourceSnapshot || migrationStatus || progressReport || acceptanceEvidence) {
+          violations.push(`迁移配置、状态、验收证据或源快照出现在新工程：${label}`);
+        } else if (configKeys.some(key => Object.hasOwn(parsed, key))) warnings.push(`JSON 含候选过程字段，请人工确认，不自动移动：${label}`);
       }
     } catch { /* 非 JSON 或无需解析，忽略 */ }
   }

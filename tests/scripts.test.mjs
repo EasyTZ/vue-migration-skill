@@ -57,7 +57,8 @@ test('初始化控制目录可重跑，保留人工内容及源码', async t => 
   assert.equal(await fs.readFile(ledger, 'utf8'), '人工维护内容');
   assert.equal(await fs.readFile(f.configFile, 'utf8'), configBefore);
   assert.equal(await fs.readFile(sourceFile, 'utf8'), '<template>原工程</template>');
-  for (const name of ['inventory', 'evidence', 'tools']) assert.ok((await fs.stat(path.join(f.control, name))).isDirectory());
+  for (const name of ['inventory', 'evidence', 'runtime', 'tools']) assert.ok((await fs.stat(path.join(f.control, name))).isDirectory());
+  assert.match(await fs.readFile(path.join(f.control, '运行验收.md'), 'utf8'), /复原度/);
 });
 
 test('初始化生成的台账把路由与入口列为独立对照表', async t => {

@@ -37,7 +37,7 @@ node "<Skill目录>/scripts/check-source.mjs" "<控制目录>" "inventory/source
 | `files` | source、sourceSha256、targets、disposition、stage、reason、evidence |
 | `entriesReviewed` / `entries` | 确认入口普查范围，登记路由/弹窗/导出/打印/任务等；入口含 id、sourceFiles、targets、status、evidence |
 | `architectureReviewed` / `architecture` | 确认架构范围，逐层登记 id、status、evidence；不适用需 reason 和依据 |
-| `checks` | 默认包含 lint、static、test、build；运行后填写 command、exitCode、executedAt、status、evidence；测试通过还需 testCount > 0 |
+| `checks` | 默认包含 lint、static、test、build、runtime；runtime 记录托管启动/停止与验收门禁结果，command 写实际执行命令，evidence 指向该次 `evidence/runs/<run-id>/` 报告；测试通过还需 testCount > 0 |
 | `bugs` | id、status、expected、basis、evidence；fixed 必须有正确预期、依据和回归证据 |
 
 文件 `stage` 支持 pending、in-progress、migrated、verified、accepted、blocked。`disposition` 为 pending、mapped 或 omitted；不迁移的文件须给出理由及证据，并达到 verified/accepted 状态。mapped 文件须引用真实目标文件；达到 verified/accepted 还须有控制目录内证据。accepted 是已有人工决定的登记，不是由工具授予。
@@ -57,3 +57,5 @@ node "<Skill目录>/scripts/migration-report.mjs" "<控制目录>" "migration-st
 退出码 `0` 表示记录达到提交复核的条件，`2` 表示有待处理项，`1` 表示工具或输入错误。JSON 中 `reviewReady` 不代表迁移已验收：工具检查引用与结构，不读取证据来判定真假，不绑定目标/证据文件与执行时版本，也不自动运行被记录的命令或代签业务人工复核。目标文件修改后必须实际重跑检查并更新记录；文件仍存在不能证明旧结果对新目标有效。入口统计的分母仅是已登记入口；entriesReviewed 是主代理的范围声明，仍需人工复核是否漏登记。
 
 新旧系统协议差异、高风险计算和真实部署仍按 [verification.md](verification.md) 执行验收。公开报告前脱敏，不把源路径、内部业务名称及私有证据直接上传到社区仓库。
+
+运行验收的 `evidence/runs/<run-id>/fidelity.json` 与 `fidelity.md` 也是过程证据：把本次运行的命令、时间和结论登记到 `checks` 与证据索引。验收门禁未通过时，文件覆盖状态不能直接升为 accepted；`reviewReady` 只看记录与引用是否齐备，不读取运行结果、不证明新代码仍通过。每轮修复后使用新 run-id，旧报告不能沿用。

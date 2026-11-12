@@ -133,7 +133,7 @@ export async function buildReport(project, baseline, current, ledger) {
   const architecture = await reviewRows(ledger.architecture, '架构层');
   if (!architecture.length) problems.push('架构层覆盖清单为空');
   if (!ledger.checks.length) problems.push('自动检查清单为空');
-  for (const kind of ['lint', 'static', 'test', 'build']) {
+  for (const kind of ['lint', 'static', 'test', 'build', 'runtime']) {
     if (!ledger.checks.some(row => row?.kind === kind)) problems.push(`缺少 ${kind} 检查或适用性说明`);
   }
   const checkIds = new Set();
